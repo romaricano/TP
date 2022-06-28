@@ -1,0 +1,99 @@
+<app-nav-bar></app-nav-bar>
+<p-toast></p-toast>
+<div class="card mt-4">
+  <p-toolbar styleClass="mb-4">
+    <ng-template pTemplate="left">
+      <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+      <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedPersonnes()" [disabled]="!selectedPersonnes || !selectedPersonnes.length"></button>
+    </ng-template>
+  </p-toolbar>
+
+  <p-table #dt [value]="personnes"
+           [rows]="10"
+           [paginator]="true"
+           [globalFilterFields]="['nom', 'age']"
+           [(selection)]="selectedPersonnes"
+           [rowHover]="true" dataKey="id"
+           currentPageReportTemplate="Affichage {first} à {last} de {totalRecords} personnes"
+           [showCurrentPageReport]="true"
+           sortField="nom"
+            >
+    <ng-template pTemplate="header">
+      <tr>
+<!--        <th style="width: 3rem">-->
+<!--          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>-->
+<!--        </th>-->
+        <th pSortableColumn="nom">Nom <p-sortIcon field="nom"></p-sortIcon></th>
+        <th >Prénom(s)</th>
+        <th>Age</th>
+        <th>Département</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-personne>
+      <tr>
+<!--        <td>-->
+<!--          <p-tableCheckbox [value]="personne"></p-tableCheckbox>-->
+<!--        </td>-->
+        <td>{{personne.nom}}</td>
+        <td>{{personne.prenoms}}</td>
+        <td>{{personne.age}}</td>
+        <td>{{personne.departement != null ? personne.departement.designation : 'AUCUN DEPARTEMENT'}}</td>
+        <td>
+          <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editPersonne(personne)"></button>
+          <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deletePersonne(personne)"></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="summary">
+      <div class="p-d-flex p-ai-center p-jc-between">
+        Total {{personnes ? personnes.length : 0 }} personnes.
+      </div>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="personneDialog" [style]="{width: '450px'}" header="Information sur la personne" [modal]="true" styleClass="p-fluid">
+  <ng-template pTemplate="content">
+    <div class="field">
+      <label for="departement">Département</label>
+      <p-autoComplete
+        id="departement"
+        [(ngModel)]="personne.departement"
+        [suggestions]="filteredDepartement"
+        (completeMethod)="searchDepartement({event : $event})"
+        field="designation"
+        label
+      ></p-autoComplete>
+<!--      <p-dropdown id="departement" [options]="departements" [(ngModel)]="personne.departement" placeholder="Departement..." optionLabel="designation" [showClear]="true"></p-dropdown>-->
+      <small class="p-invalid" *ngIf="submitted && !personne.departement">Le departement est requis.</small>
+    </div>
+
+    <div class="field">
+      <label for="name">Nom</label>
+      <input  pInputText id="name" [(ngModel)]="personne.nom" required autofocus />
+      <small class="p-invalid" *ngIf="submitted && !personne.nom">Le nom est requis.</small>
+    </div>
+
+    <div class="field">
+      <label for="prenoms">Prénoms</label>
+      <input type="text" id="prenoms" pInputText [(ngModel)]="personne.prenoms" required autofocus>
+      <small class="p-invalid" *ngIf="submitted && !personne.prenoms">Ce champ est requis.</small>
+    </div>
+
+    <div class="field">
+      <label for="age">Age</label>
+      <p-inputNumber id="age" [(ngModel)]="personne.age" [showButtons]="true" buttonLayout="horizontal" spinnerMode="horizontal" [min]="1" [max]="100" [maxlength]="2"
+                     decrementButtonClass="p-button-danger" incrementButtonClass="p-button-success" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" mode="decimal"></p-inputNumber>
+      <small class="p-invalid" *ngIf="submitted && !personne.age">Ce champ est requis.</small>
+    </div>
+
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+    <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="savePersonne()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
